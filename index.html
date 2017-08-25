@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
+        <title>CRUD Application</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+        <link rel="stylesheet"  href="css/style.css"/>
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.4.3/sweetalert2.css">
+    </head>
+    <style>
+	.is-danger {
+	    color: red;
+	    font-style: italic;
+	}
+	.icon {
+	    padding-right: 4px;
+	}
+    </style>	
+    <body>
+        <div id="app" class="container-fluid">
+            <router-view class="view"></router-view>
+        </div>
+        <!-- Product Listing Template -->
+    <template id="product-listing-template">
+
+	<div>
+	    <!--		<div>{{ searchProduct }}</div>-->
+	    <div class="row">
+		<div class="col-sm-2">
+		    <router-link :to="{ path: 'create' }" class="btn btn-primary"><span class="glyphicon glyphicon-plus icon"></span>Add Product</router-link>
+		</div>
+		<div class="col-sm-3" style="float: right;">		    
+		    <div class="form-group">
+			<input type="text" name="search" class="form-control" placeholder="Search Product" v-model="searchQuery">
+		    </div>
+		</div>		
+	    </div>
+	    <table class="table comman-table">
+
+		<thead>
+		    <tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Price</th>
+			<th class="col-sm-2">Actions</th>
+		    </tr>
+		</thead>
+		<tbody>
+		    <tr v-for="(person, index) in searchProduct">
+			<td>
+			    <a>{{person.name }}</a>
+			</td>
+			<td>{{ person.description }}</td>
+			<td>
+			    {{ person.price }}
+			</td>
+			<td class="lasttd">
+		<router-link :to="{ name: 'person', params: { id: person.id }}" class="btn btn-default btn-success"><i class="fa fa-edit"></i> Edit</router-link>
+		<a class="btn btn-danger" v-on:click="deleteProduct(person, index)"><i class="fa fa-trash"></i> Delete</a> 
+		</td>
+		</tr>
+		</tbody>
+	    </table>
+	    <div class="pagination-row">
+		<ul class="pagination">
+                    <li class="paginate_button previous" v-bind:class="prevPageDisabled()"><a href="javascript:;" v-on:click="prevPage()">Previous</a></li>
+                    <li v-bind:class="{'active' : n+1 === currentPage}" v-for="n in pageRange" class="paginate_button" v-on:click="setPage(n+1)"><a href="javascript:;">{{n+1}}</a></li>
+                    <li class="paginate_button next" v-bind:class="nextPageDisabled()"><a href="javascript:;" v-on:click="nextPage()">Next</a></li>
+		</ul>
+	    </div>
+
+	</div>
+    </template>
+
+    <!-- Product Creation Template -->
+
+    <template id="product-creation-template">
+	<div>
+	    <h2> Create Product </h2>
+	    <div class="row" style="margin-bottom: 10px;">
+
+		<div class="col-sm-6">
+
+		    <router-link :to="{ path: 'products' }" class="btn btn-success">
+			<span class="glyphicon glyphicon-hand-left icon"></span>Back
+		    </router-link>
+		</div>
+		<div class="col-sm-6">
+		    <div style="float:right">			
+			<router-link :to="{ path: 'products' }" class="btn btn-info"><span class="glyphicon glyphicon-home icon"></span>Homepage</router-link>
+		    </div>    
+
+		</div>
+	    </div>
+
+	    <form>
+		<div class="form-group">
+		    <label for="productName">Name</label>
+		    <input type="text" v-validate="'required'" name="name" class="form-control" id="productName" placeholder="Product Name" v-model="productName">
+		    <span v-show="errors.has('name')" class="help is-danger">{{ errors.first('name') }}</span>
+		</div>
+		<div class="form-group">
+		    <label for="productDescription">Description</label>
+		    <input type="text" v-validate="'required'" name="desc" class="form-control" id="productDescription" placeholder="Product Description" v-model="productDescription">
+		    <span v-show="errors.has('desc')" class="help is-danger">{{ errors.first('desc') }}</span>
+		</div>
+		<div class="form-group">
+		    <label for="productPrice">Price</label>
+		    <input type="text" v-validate="'required|numeric'" type="text" name="price" class="form-control" id="productPrice" placeholder="Product Price" v-model="productPrice">
+		    <span v-show="errors.has('price')" class="help is-danger">{{ errors.first('price') }}</span>
+		</div>
+
+		<button type="button" class="btn btn-primary" v-on:click.once="createProduct">Submit</button>
+	    </form>
+	</div>
+
+    </template>
+
+    <!-- Product Edit Template -->
+    <template id="product-detail-template">
+	<div>
+	    <h2> Edit Product </h2>
+	    <div class="row" style="margin-bottom: 10px;">
+		<div class="col-sm-6">
+		    <router-link :to="{ path: 'products' }" class="btn btn-info"><span class="glyphicon glyphicon-home icon"></span>Homepage</router-link>
+		</div>    
+	    </div>  
+	    <form>
+		<div class="form-group">
+		    <label for="productName">Name</label>
+		    <input type="text" class="form-control" id="productName" placeholder="Product Name" v-model="productName">
+		</div>
+		<div class="form-group">
+		    <label for="productDescription">Description</label>
+		    <input type="text" class="form-control" id="productDescription" placeholder="Product Description" v-model="productDescription">
+		</div>
+		<div class="form-group">
+		    <label for="productPrice">Price</label>
+		    <input type="text" class="form-control" id="productPrice" placeholder="Product Price" v-model="productPrice">
+		</div>
+
+		<button type="button" class="btn btn-primary" v-on:click.once="updateProduct">Submit</button>
+	    </form>
+
+	</div>
+    </template>
+    <template id="login-template">
+	<div class="container">    
+	    <div id="loginbox" v-if="!seen" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">                    
+		<div class="panel panel-info" >
+                    <div class="panel-heading">
+                        <div class="panel-title">Sign In</div>
+                    </div>     
+
+                    <div style="padding-top:30px" class="panel-body" >
+
+                        <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
+
+                        <form id="loginform" class="form-horizontal">
+
+                            <div style="margin-bottom: 25px" class="input-group">
+				<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+				<input id="login-username" type="text" class="form-control" id="userName" placeholder="Username" v-model="userName">                                        
+			    </div>
+
+                            <div style="margin-bottom: 25px" class="input-group">
+				<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+				<input id="login-password" type="password" class="form-control" id="userPass" placeholder="Password" v-model="userPass">
+			    </div>
+
+
+			    <div style="margin-top:10px" class="form-group">
+				<!-- Button -->
+
+				<div class="col-sm-12 controls">
+				    <button type="button" class="btn btn-success" v-on:click.once="userLogin">Login</button>
+				</div>
+			    </div>
+
+
+			    <div class="form-group">
+				<div class="col-md-12 control">
+				    <div style="border-top: 1px solid#888; padding-top:15px; font-size:85%" >
+					Don't have an account! 
+                                        <a href="#" v-on:click="seen = !seen">Sign Up Here</a>
+				    </div>
+				</div>
+			    </div>    
+			</form>     
+		    </div>                     
+		</div>  
+	    </div>
+	    <div id="signupbox" v-if="seen" style="margin-top:50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+		<div class="panel panel-info">
+		    <div class="panel-heading">
+			<div class="panel-title">Sign Up</div>
+			<div style="float:right; font-size: 85%; position: relative; top:-17px">
+			    Already have an account? 
+			    <a id="signinlink" href="#" v-on:click="seen = !seen">Sign In</a></div>
+		    </div>  
+		    <div class="panel-body" >
+			<form id="signupform" class="form-horizontal">
+
+			    <div class="form-group">
+				<label for="firstname" class="col-md-3 control-label">First Name</label>
+				<div class="col-md-9">
+				    <input type="text" class="form-control" name="firstname" placeholder="First Name" v-model="fname">
+				</div>
+			    </div>
+			    <div class="form-group">
+				<label for="lastname" class="col-md-3 control-label">Last Name</label>
+				<div class="col-md-9">
+				    <input type="text" class="form-control" name="lastname" placeholder="Last Name" v-model="lname">
+				</div>
+			    </div>
+			    <div class="form-group">
+				<label for="password" class="col-md-3 control-label">Password</label>
+				<div class="col-md-9">
+				    <input type="password" class="form-control" name="passwd" placeholder="Password" v-model="password">
+				</div>
+			    </div>
+			    <div class="form-group">
+				<label for="email" class="col-md-3 control-label">Email</label>
+				<div class="col-md-9">
+				    <input type="text" class="form-control" name="email" placeholder="Email Address" v-model="email">
+				</div>
+			    </div>
+			    <div class="form-group">
+				<label for="email" class="col-md-3 control-label">Username</label>
+				<div class="col-md-9">
+				    <input type="text" class="form-control" name="email" placeholder="uname">
+				</div>
+			    </div>
+
+			    <div class="form-group">
+				<!-- Button -->                                        
+				<div class="col-md-offset-3 col-md-9">
+				    <button id="btn-signup" type="button" class="btn btn-info" v-on:click.once="userRegister"><i class="icon-hand-right"></i> &nbsp Sign Up</button>
+				</div>
+			    </div>
+			</form>
+		    </div>
+		</div>
+
+
+
+
+	    </div>
+
+	</div>
+    </template>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/2.0.1/vue-router.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.2.1/vue-resource.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue/dist/bootstrap-vue.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/vee-validate/2.0.0-beta.25/vee-validate.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.4.3/sweetalert2.min.js">
+    </script>
+    <script>
+	Vue.use(VeeValidate); // good to go. 
+    </script>
+
+    <!-- Application JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>
