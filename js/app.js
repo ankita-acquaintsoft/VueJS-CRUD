@@ -195,6 +195,10 @@ var UserLogin = Vue.extend({
 	      email:this.email,
               uname:this.uname}).then((response) => {
 	      if(response.body.id > 0){
+		  swal({
+		    title: 'User registration sucessfull!!',
+		    type: 'success',
+		  });
 	         this.$router.push('/products');
 	      }else{
 		  alert("Please enter correct details!!");
