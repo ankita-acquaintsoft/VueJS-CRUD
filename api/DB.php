@@ -83,7 +83,7 @@ class DB {
 	return !empty($data) ? $data : false;
     }
     
-     public function login($table, $conditions = array()) {
+    public function login($table, $conditions = array()) {
 	$sql = 'SELECT ';
 	$sql .= array_key_exists("select", $conditions) ? $conditions['select'] : '*';
 	$sql .= ' FROM ' . $table;
@@ -111,6 +111,38 @@ class DB {
 
 	$data = $query->fetchColumn();
 	return !empty($data) ? $data : false;
+    }
+    
+    public function insert($table,$data){
+        if(!empty($data) && is_array($data)){
+            $columns = '';
+            $values  = '';
+            $i = 0;
+            if(!array_key_exists('created',$data)){
+                $data['created'] = date("Y-m-d H:i:s");
+            }
+            if(!array_key_exists('modified',$data)){
+                $data['modified'] = date("Y-m-d H:i:s");
+            }
+
+            $columnString = implode(',', array_keys($data));
+            $valueString = ":".implode(',:', array_keys($data));
+            $sql = "INSERT INTO ".$table." (".$columnString.") VALUES (".$valueString.")";
+            $query = $this->db->prepare($sql);
+            foreach($data as $key=>$val){
+                $val = htmlspecialchars(strip_tags($val));
+                $query->bindValue(':'.$key, $val);
+            }
+            $insert = $query->execute();
+            if($insert){
+                $data = $this->db->lastInsertId();
+                return $data;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
     }
 
 

@@ -188,16 +188,13 @@ var UserLogin = Vue.extend({
 	    
         },
 	userRegister: function () {
-            console.log(this.fname);
-	    console.log(this.lname);
-	    console.log(this.password);
-	    console.log(this.email);
-	    console.log(this.uname);
-
 	    this.$http.post('api/action.php', { action: 'register',
-	      username: this.userName,
-              password:this.userPass,}).then((response) => {
-	      if(response.body.records > 0){
+	      fname: this.fname,
+              lname:this.lname,
+	      password:this.password,
+	      email:this.email,
+              uname:this.uname}).then((response) => {
+	      if(response.body.id > 0){
 	         this.$router.push('/products');
 	      }else{
 		  alert("Please enter correct details!!");
