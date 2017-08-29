@@ -178,7 +178,7 @@ var UserLogin = Vue.extend({
 	    
 	    this.$http.post('api/action.php', { action: 'login',
 	      username: this.userName,
-              password:this.userPass,}).then((response) => {
+              password:this.userPass},{ emulateJSON: true }).then((response) => {
 	      if(response.body.records > 0){
 	         this.$router.push('/products');
 	      }else{

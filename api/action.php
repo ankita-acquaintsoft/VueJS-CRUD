@@ -3,8 +3,7 @@
 include 'DB.php';
 $db = new DB();
 $tblName = 'users';
-$json = file_get_contents('php://input');
-$_REQUEST = json_decode($json, true);
+
 if (isset($_REQUEST['action']) && !empty($_REQUEST['action'])) {
     $action = $_REQUEST['action'];
     switch ($action) {
